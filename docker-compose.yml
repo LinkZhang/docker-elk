@@ -61,12 +61,18 @@ services:
         source: ./filebeat/config/filebeat.yml
         target: /usr/share/filebeat/config/filebeat.yml
         read_only: true
+    volumes:
+      - type: bind
+        source: /var/log/nginx
+        target: /var/log/nginx
+        read_only: true
     networks:
       - elk
     depends_on:
       - logstash
 
   kibana:
+    container_name: kibana
     build:
       context: kibana/
       args:
