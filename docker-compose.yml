@@ -2,6 +2,7 @@ version: '3.2'
 
 services:
   elasticsearch:
+    container_name: elasticsearch
     build:
       context: elasticsearch/
       args:
@@ -24,6 +25,7 @@ services:
       - elk
 
   logstash:
+    container_name: logstash
     build:
       context: logstash/
       args:
@@ -38,7 +40,7 @@ services:
         target: /usr/share/logstash/pipeline
         read_only: true
     ports:
-      - "5000:5000"
+      - "5044:5044"
       - "9600:9600"
     environment:
       LS_JAVA_OPTS: "-Xmx256m -Xms256m"
@@ -46,6 +48,23 @@ services:
       - elk
     depends_on:
       - elasticsearch
+
+  filebeat:
+    container_name: filebeat
+    user: root
+    build:
+      context: filebeat/
+      args:
+        ELK_VERSION: $ELK_VERSION
+    volumes:
+      - type: bind
+        source: ./filebeat/config/filebeat.yml
+        target: /usr/share/filebeat/config/filebeat.yml
+        read_only: true
+    networks:
+      - elk
+    depends_on:
+      - logstash
 
   kibana:
     build:
